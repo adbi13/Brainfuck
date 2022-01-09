@@ -15,6 +15,7 @@ int initProgram(struct Program *program)
         fprintf(stderr, "Error: Allocation failed.\n");
         return BF_FAILURE;
     }
+    memset(program->memory, 0, 8);
     program->memorySize = 8;
     program->pointerPosition = program->memory;
     return BF_SUCCESS;
@@ -96,7 +97,7 @@ static int right(struct Program *program)
     {
         program->memorySize *= 2;
         unsigned char *tmp = program->memory;
-        program->memory = realloc(program->memory ,program->memorySize * sizeof(unsigned char));
+        program->memory = realloc(program->memory, program->memorySize * sizeof(unsigned char));
         if (!program->memory)
         {
             free(tmp);
@@ -104,6 +105,7 @@ static int right(struct Program *program)
             fprintf(stderr, "Error: Allocation failed.\n");
             return BF_FAILURE;            
         }
+        memset(program->memory, 0, program->memorySize / 2);
         program->pointerPosition = program->memory + (program->pointerPosition - tmp);
     }
     return BF_SUCCESS;
