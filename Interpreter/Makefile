@@ -1,4 +1,6 @@
 CFLAGS += -std=c99 -Wall -Wextra
+LDFLAGS = -Wl,-rpath,./ -L.
+LDLIBS = -lbrainfuck
 
 TARGET = brainfuck
 LIB = lib$(TARGET).so
@@ -11,13 +13,14 @@ LIB_OBJECT = $(TARGET)Lib.o
 
 all: $(LIB) $(TARGET)
 $(TARGET): $(INTERPRETER_OBJECT)
+	$(CC) $(LDFLAGS) $^ $(LOADLIBES) -o $@ $(LDLIBS) 
 $(INTERPRETER_OBJECT): $(INTERPRETER_SOURCE)
 
 $(LIB): $(LIB_OBJECT)
 	$(CC) -shared -o $@ $^
 
 $(LIB_OBJECT): $(LIB_SOURCE)
-	$(CC) -fPIC -c -o $@ $^
+	$(CC) -fpic -c -o $@ $^
 
 clean:
 	-$(RM) $(INTERPRETER_OBJECT) $(LIB_OBJECT)
