@@ -14,19 +14,21 @@ int checkRightBracket(int *bracketStack, bool emptyLoop,
 {
     if (emptyLoop)
     {
-        fprintf(stderr, "Error: Contains endless loop at position %d.\n", actualPosition);
+        fprintf(stderr, "Error: Contains endless loop at position %ld.\n", actualPosition);
         return ENDLESS_LOOP;
     }
     (*bracketStack)--;
     if (*bracketStack < 0)
     {
-        fprintf(stderr, "Error: Missing left bracket for loop ending at position %d.\n", actualPosition);
+        fprintf(stderr, "Error: Missing left bracket for loop ending at position %ld.\n", actualPosition);
         return MISSING_LEFT;
     }
     if (*bracketStack == 0)
     {
         *firstLeftPosition = 0;
     }
+
+    return VALID;
 }
 
 
@@ -78,7 +80,7 @@ int validate(FILE* input)
 
     if (bracketStack > 0)
     {
-        fprintf(stderr, "Error: Missing right bracket for loop starting at position %d.\n", firstLeftPosition);
+        fprintf(stderr, "Error: Missing right bracket for loop starting at position %ld.\n", firstLeftPosition);
         return MISSING_RIGHT;        
     }
     return VALID;
@@ -113,11 +115,11 @@ int main(int argc, char *argv[])
 {
     if (argc == 1)
     {
-        fprintf(stderr, "Error: Expected file to open.\n", argv[0]);
+        fprintf(stderr, "Error: Expected file to open.\n");
         return EXIT_FAILURE;
     }
 
-    FILE *input = fopen(argv[0], "r");
+    FILE *input = fopen(argv[1], "r");
     if (!input)
     {
         fprintf(stderr, "Error: Can't open file %s.\n", argv[0]);

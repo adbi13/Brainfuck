@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #ifndef BRAINFUCKLIB_H
 #define BRAINFUCKLIB_H
 

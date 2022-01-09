@@ -28,9 +28,16 @@ int destroyProgram(struct Program *program)
     return BF_SUCCESS;
 }
 
+void printCommands(struct Program *program)
+{
+    for (size_t i = 0; i < program->commandsSize; i++)
+    {
+        fprintf(stderr, " %c |", program->commands[i]);
+    }
+}
+
 static int loop(struct Program *program)
 {
-    program->actualCommand++;
     size_t loopStart = program->actualCommand;
     int result;
     do
@@ -60,13 +67,13 @@ static int loopEnd(struct Program *program)
 
 static int increment(struct Program *program)
 {
-    (*program->pointerPosition)++;
+    (*(program->pointerPosition))++;
     return BF_SUCCESS;
 }
 
 static int decrement(struct Program *program)
 {
-    (*program->pointerPosition)--;
+    (*(program->pointerPosition))--;
     return BF_SUCCESS;
 }
 
@@ -78,14 +85,14 @@ static int in(struct Program *program)
 
 static int out(struct Program *program)
 {
-    putchar((int) *(program->pointerPosition));
+    putchar(*(program->pointerPosition));
     return BF_SUCCESS;
 }
 
 static int right(struct Program *program)
 {
     program->pointerPosition++;
-    if (program->pointerPosition == program->memory + program->memorySize)
+    if (program->pointerPosition >= program->memory + program->memorySize)
     {
         program->memorySize *= 2;
         unsigned char *tmp = program->memory;
@@ -97,17 +104,19 @@ static int right(struct Program *program)
             fprintf(stderr, "Error: Allocation failed.\n");
             return BF_FAILURE;            
         }
+        program->pointerPosition = program->memory + (program->pointerPosition - tmp);
     }
     return BF_SUCCESS;
 }
 
 static int left(struct Program *program)
 {
-    if (program->pointerPosition == 0)
+    if (program->pointerPosition <= program->memory)
     {
         fprintf(stderr, "Error: Step out of memory.");
         return BF_FAILURE;
     }
+    program->pointerPosition--;
     return BF_SUCCESS;
 }
 
@@ -153,15 +162,15 @@ int step(struct Program *program)
         break;
 
     case '.':
-        command = in;
+        command = out;
         break;
 
     case ',':
-        command = out;
+        command = in;
         break;
     
     default:
-        fprintf(stderr, "Error: Unknown command: %c", program->commands[program->actualCommand]);
+        fprintf(stderr, "Error: Unknown command %c (ASCII %d) at position %ld.\n", program->commands[program->actualCommand], program->commands[program->actualCommand], program->actualCommand);
         return BF_FAILURE;
     }
     
@@ -181,7 +190,6 @@ int run(struct Program *program)
         fprintf(stderr, "Error: Missing commands.\n");
         return BF_FAILURE;        
     }
-
     while (program->actualCommand < program->commandsSize && program->commands[program->actualCommand] != 0)
     {
         if (step(program) == BF_FAILURE)
@@ -214,14 +222,15 @@ int load(FILE *input, struct Program *program)
         if (program->commandsSize == actual)
         {
             char *tmp = program->commands;
-            program->commandsSize *= 2;
-            program->commands = realloc(program->commands, program->commandsSize);
+            program->commands = realloc(program->commands, program->commandsSize * 2);
             if (!program->commands)
             {
                 free(tmp);
                 fprintf(stderr, "Error: Allocation failed.\n");
                 return BF_FAILURE;
             }
+            memset(program->commands + program->commandsSize, 0, program->commandsSize);
+            program->commandsSize *= 2;
         }
 
         switch (command)
@@ -231,6 +240,7 @@ int load(FILE *input, struct Program *program)
         case ',': case '.':
         case '<': case '>':
             program->commands[actual] = command;
+            actual++;
             break;
         
         default:
